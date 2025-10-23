@@ -221,7 +221,7 @@ export default function Home() {
           onDownload={handleDownload}
           targetLanguage={targetLanguage}
         />
-        <main className="flex-grow p-4 grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden">
+        <main className="flex-grow p-4 flex flex-col gap-4 overflow-auto">
           <AnalysisPane title="Original Input">
             {isRecording && <VoiceVisualizer analyser={analyserNode} />}
             {!originalTranscription && !isRecording && (
