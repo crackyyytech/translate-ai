@@ -20,7 +20,7 @@ export const ReportTemplate = React.forwardRef<HTMLDivElement, { data: ReportDat
     return (
         <div ref={ref}>
             <div className="text-center mb-8">
-                <h1 className="text-4xl font-bold">MozhiGenie Analysis Report</h1>
+                <h1 className="text-4xl font-bold">Translate ai Analysis Report</h1>
                 <p className="text-sm text-gray-500">{currentDate}</p>
             </div>
 

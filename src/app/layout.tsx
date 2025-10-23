@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'MozhiGenie',
+  title: 'Translate ai',
   description: 'AI-powered Tamil transcription, normalization, and translation.',
 };
 

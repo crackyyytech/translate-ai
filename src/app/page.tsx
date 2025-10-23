@@ -10,6 +10,7 @@ import {
   Smile,
   Mic,
   Upload,
+  MicOff,
 } from 'lucide-react';
 
 import { useAudioRecorder } from '@/hooks/use-audio-recorder';
@@ -169,7 +170,7 @@ export default function Home() {
         printWindow?.document.write(`
             <html>
                 <head>
-                    <title>MozhiGenie Report</title>
+                    <title>Translate ai Report</title>
                     <link rel="preconnect" href="https://fonts.googleapis.com" />
                     <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
                     <link
@@ -222,52 +223,56 @@ export default function Home() {
           targetLanguage={targetLanguage}
         />
         <main className="flex-grow p-4 flex flex-col gap-4 overflow-auto">
-          <AnalysisPane title="Original Input">
-            {isRecording && <VoiceVisualizer analyser={analyserNode} />}
-            {!originalTranscription && !isRecording && (
-              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
-                <BrainCircuit size={48} className="mb-4" />
-                <p>Click the <Mic className="inline-block h-4 w-4" /> button to start recording or <Upload className="inline-block h-4 w-4" /> to upload an audio file.</p>
-                <p className="mt-2 text-sm">Your transcribed Tamil will appear here.</p>
-              </div>
-            )}
-            {originalTranscription && <p className="font-tamil">{originalTranscription}</p>}
-          </AnalysisPane>
-          
-          <AnalysisPane title="Normalized Tamil" fontClassName="font-tamil">
-            {normalizedTamil || <p className="text-muted-foreground">Standard Tamil text will appear here after normalization.</p>}
-          </AnalysisPane>
-          
-          <AnalysisPane 
-            title={`Translation (${targetLanguage})`}
-            actions={
-              <>
-                {emotion && emotionIcons[emotion]}
-                <Button variant="ghost" size="icon" onClick={() => handleTTS(translatedText)} disabled={!translatedText} aria-label="Play translated text">
-                  <PlayCircle />
-                </Button>
-              </>
-            }
-          >
-            {translatedText || <p className="text-muted-foreground">Translated text will appear here.</p>}
-            {(tamilSummary || translatedSummary) && (
-                <Accordion type="single" collapsible className="mt-6 w-full">
-                  <AccordionItem value="item-1">
-                    <AccordionTrigger>View Summaries</AccordionTrigger>
-                    <AccordionContent className="space-y-4">
-                      <div>
-                        <h4 className="font-semibold mb-1">Tamil Summary</h4>
-                        <p className="font-tamil text-sm text-muted-foreground">{tamilSummary}</p>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold mb-1">{targetLanguage} Summary</h4>
-                        <p className="text-sm text-muted-foreground">{translatedSummary}</p>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-            )}
-          </AnalysisPane>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 flex-grow">
+            <AnalysisPane title="Original Input" className="lg:col-span-1">
+              {isRecording && <VoiceVisualizer analyser={analyserNode} />}
+              {!originalTranscription && !isRecording && (
+                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
+                  <BrainCircuit size={48} className="mb-4" />
+                  <p>Click the <Mic className="inline-block h-4 w-4" /> button to start recording or <Upload className="inline-block h-4 w-4" /> to upload an audio file.</p>
+                  <p className="mt-2 text-sm">Your transcribed Tamil will appear here.</p>
+                </div>
+              )}
+              {originalTranscription && <p className="font-tamil">{originalTranscription}</p>}
+            </AnalysisPane>
+            
+            <div className="flex flex-col gap-4 lg:col-span-2">
+              <AnalysisPane title="Normalized Tamil" fontClassName="font-tamil">
+                {normalizedTamil || <p className="text-muted-foreground">Standard Tamil text will appear here after normalization.</p>}
+              </AnalysisPane>
+              
+              <AnalysisPane 
+                title={`Translation (${targetLanguage})`}
+                actions={
+                  <>
+                    {emotion && emotionIcons[emotion]}
+                    <Button variant="ghost" size="icon" onClick={() => handleTTS(translatedText)} disabled={!translatedText} aria-label="Play translated text">
+                      <PlayCircle />
+                    </Button>
+                  </>
+                }
+              >
+                {translatedText || <p className="text-muted-foreground">Translated text will appear here.</p>}
+                {(tamilSummary || translatedSummary) && (
+                    <Accordion type="single" collapsible className="mt-6 w-full">
+                      <AccordionItem value="item-1">
+                        <AccordionTrigger>View Summaries</AccordionTrigger>
+                        <AccordionContent className="space-y-4">
+                          <div>
+                            <h4 className="font-semibold mb-1">Tamil Summary</h4>
+                            <p className="font-tamil text-sm text-muted-foreground">{tamilSummary}</p>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold mb-1">{targetLanguage} Summary</h4>
+                            <p className="text-sm text-muted-foreground">{translatedSummary}</p>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                )}
+              </AnalysisPane>
+            </div>
+          </div>
         </main>
 
         <div className="hidden">
