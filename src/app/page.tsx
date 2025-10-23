@@ -30,6 +30,8 @@ import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
+export const maxDuration = 300; // 5 minutes
+
 const processingSteps = [
   'Transcribing audio to Tamil...',
   'Normalizing & Translating...',
@@ -93,26 +95,29 @@ export default function Home() {
       setProgress(30);
       
       setStatusText(processingSteps[1]);
-      const normalizationResult = await normalizeTamilSlang({ tamilText: transcriptionResult.transcription });
-      const normalizedText = normalizationResult.normalizedTamilText;
-      setNormalizedTamil(normalizedText);
+      const [normalizationResult, emotionResult, translationResult] = await Promise.all([
+          normalizeTamilSlang({ tamilText: transcriptionResult.transcription }),
+          detectEmotionTone({ text: transcriptionResult.transcription }),
+          translateNormalizedTamil({
+              normalizedTamilText: transcriptionResult.transcription,
+              targetLanguage,
+          }),
+      ]);
 
-      const translationResult = await translateNormalizedTamil({ normalizedTamilText: normalizedText, targetLanguage });
+      const normalizedText = normalizationResult.normalizedTamilText;
       const translated = translationResult.translatedText;
+      setNormalizedTamil(normalizedText);
       setTranslatedText(translated);
+      setEmotion(emotionResult.emotion.toLowerCase());
       setProgress(60);
       
       setStatusText(processingSteps[2]);
-      const [emotionResult, summaryResult] = await Promise.all([
-        detectEmotionTone({ text: translated }),
-        summarizeTranslatedText({
-            tamilText: normalizedText,
-            translatedText: translated,
-            language: targetLanguage,
-        })
-      ]);
+      const summaryResult = await summarizeTranslatedText({
+        tamilText: normalizedText,
+        translatedText: translated,
+        language: targetLanguage,
+      })
 
-      setEmotion(emotionResult.emotion.toLowerCase());
       setTamilSummary(summaryResult.tamilSummary);
       setTranslatedSummary(summaryResult.translatedSummary);
       setProgress(90);
@@ -229,53 +234,53 @@ export default function Home() {
         />
         <main className="flex-grow p-4 flex flex-col gap-4 overflow-auto">
           <div className="flex flex-col gap-4 flex-grow">
+              <AnalysisPane title="Original Input" className="lg:col-span-1">
+                  {isRecording && <VoiceVisualizer analyser={analyserNode} />}
+                  {!originalTranscription && !isRecording && (
+                  <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
+                      <BrainCircuit size={48} className="mb-4" />
+                      <p>Click the <Mic className="inline-block h-4 w-4" /> button to start recording or <Upload className="inline-block h-4 w-4" /> to upload an audio file.</p>
+                      <p className="mt-2 text-sm">Your transcribed Tamil will appear here.</p>
+                  </div>
+                  )}
+                  {originalTranscription && <p className="font-tamil">{originalTranscription}</p>}
+              </AnalysisPane>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <AnalysisPane title="Original Input" className="lg:col-span-1">
-                      {isRecording && <VoiceVisualizer analyser={analyserNode} />}
-                      {!originalTranscription && !isRecording && (
-                      <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
-                          <BrainCircuit size={48} className="mb-4" />
-                          <p>Click the <Mic className="inline-block h-4 w-4" /> button to start recording or <Upload className="inline-block h-4 w-4" /> to upload an audio file.</p>
-                          <p className="mt-2 text-sm">Your transcribed Tamil will appear here.</p>
-                      </div>
-                      )}
-                      {originalTranscription && <p className="font-tamil">{originalTranscription}</p>}
-                  </AnalysisPane>
                   <AnalysisPane title="Normalized Tamil" fontClassName="font-tamil">
                       {normalizedTamil || <p className="text-muted-foreground">Standard Tamil text will appear here after normalization.</p>}
                   </AnalysisPane>
+                  <AnalysisPane 
+                    title={`Translation (${targetLanguage})`}
+                    actions={
+                      <>
+                        {emotion && emotionIcons[emotion]}
+                        <Button variant="ghost" size="icon" onClick={() => handleTTS(translatedText)} disabled={!translatedText} aria-label="Play translated text">
+                          <PlayCircle />
+                        </Button>
+                      </>
+                    }
+                  >
+                    {translatedText || <p className="text-muted-foreground">Translated text will appear here.</p>}
+                  </AnalysisPane>
               </div>
               
-              <AnalysisPane 
-                title={`Translation (${targetLanguage})`}
-                actions={
-                  <>
-                    {emotion && emotionIcons[emotion]}
-                    <Button variant="ghost" size="icon" onClick={() => handleTTS(translatedText)} disabled={!translatedText} aria-label="Play translated text">
-                      <PlayCircle />
-                    </Button>
-                  </>
-                }
-              >
-                {translatedText || <p className="text-muted-foreground">Translated text will appear here.</p>}
-                {(tamilSummary || translatedSummary) && (
-                    <Accordion type="single" collapsible className="mt-6 w-full">
-                      <AccordionItem value="item-1">
-                        <AccordionTrigger>View Summaries</AccordionTrigger>
-                        <AccordionContent className="space-y-4">
-                          <div>
-                            <h4 className="font-semibold mb-1">Tamil Summary</h4>
-                            <p className="font-tamil text-sm text-muted-foreground">{tamilSummary}</p>
-                          </div>
-                          <div>
-                            <h4 className="font-semibold mb-1">{targetLanguage} Summary</h4>
-                            <p className="text-sm text-muted-foreground">{translatedSummary}</p>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                )}
-              </AnalysisPane>
+              {(tamilSummary || translatedSummary) && (
+                  <Accordion type="single" collapsible className="w-full bg-card p-4 rounded-lg">
+                    <AccordionItem value="item-1">
+                      <AccordionTrigger>View Summaries</AccordionTrigger>
+                      <AccordionContent className="space-y-4 pt-4">
+                        <div>
+                          <h4 className="font-semibold mb-1">Tamil Summary</h4>
+                          <p className="font-tamil text-sm text-muted-foreground">{tamilSummary}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-1">{targetLanguage} Summary</h4>
+                          <p className="text-sm text-muted-foreground">{translatedSummary}</p>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+              )}
           </div>
         </main>
 
