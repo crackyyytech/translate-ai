@@ -29,6 +29,9 @@ export type SummarizeTranslatedTextOutput = z.infer<
   typeof SummarizeTranslatedTextOutputSchema
 >;
 
+const AiOutputSchema = SummarizeTranslatedTextOutputSchema.omit({ progress: true });
+
+
 export async function summarizeTranslatedText(
   input: SummarizeTranslatedTextInput
 ): Promise<SummarizeTranslatedTextOutput> {
@@ -38,8 +41,8 @@ export async function summarizeTranslatedText(
 const summarizeTranslatedTextPrompt = ai.definePrompt({
   name: 'summarizeTranslatedTextPrompt',
   input: {schema: SummarizeTranslatedTextInputSchema},
-  output: {schema: SummarizeTranslatedTextOutputSchema},
-  prompt: `You are an expert summarizer. Please provide concise summaries of the following text in both Tamil and {{{language}}}.\n\nTamil Text: {{{tamilText}}}\n\nTranslated Text (in {{{language}}}): {{{translatedText}}}\n\nEnsure that the summaries accurately capture the main points and context of the original texts.\n\nOutput the Tamil Summary in the tamilSummary field and the {{{language}}} summary in the translatedSummary field. Also add one short, one-sentence summary of what you have generated to the 'progress' field in the output.`,
+  output: {schema: AiOutputSchema},
+  prompt: `You are an expert summarizer. Please provide concise summaries of the following text in both Tamil and {{{language}}}.\n\nTamil Text: {{{tamilText}}}\n\nTranslated Text (in {{{language}}}): {{{translatedText}}}\n\nEnsure that the summaries accurately capture the main points and context of the original texts.\n\nOutput the Tamil Summary in the tamilSummary field and the {{{language}}} summary in the translatedSummary field.`,
 });
 
 const summarizeTranslatedTextFlow = ai.defineFlow(
