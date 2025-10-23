@@ -4,7 +4,7 @@ Be.computer science & engineering
 
 ## Deploying to Vercel
 
-Hosting this Next.js project on Vercel is a straightforward process. Follow these steps to deploy your application.
+Hosting this Next.js project on Vercel is a straightforward process. Vercel's free "Hobby" plan is a great option for hosting this application.
 
 ### 1. Push Your Project to a Git Repository
 
@@ -31,3 +31,56 @@ This project uses the Gemini API for its AI features, which requires an API key.
 Once the environment variable is set, click the **Deploy** button. Vercel will build and deploy your application. After the deployment is complete, you will be provided with a public URL to access your live site.
 
 Your project is now hosted on Vercel! Any future pushes to your connected Git branch (usually `main`) will automatically trigger a new deployment.
+
+## Deploying to Firebase App Hosting
+
+Firebase App Hosting is another excellent free option for deploying your Next.js application.
+
+### 1. Install the Firebase CLI
+
+First, you need to install the Firebase Command Line Interface (CLI) on your computer. You can do this using npm.
+
+```bash
+npm install -g firebase-tools
+```
+
+### 2. Log In to Firebase
+
+Authenticate with your Google account by running the following command:
+
+```bash
+firebase login
+```
+
+### 3. Initialize Firebase in Your Project
+
+If you haven't already, you need to initialize Firebase in your project directory.
+
+```bash
+firebase init
+```
+
+When prompted:
+1.  Select **App Hosting**.
+2.  Choose to use an existing Firebase project and select it from the list.
+3.  Follow the prompts to set up your backend.
+
+### 4. Set the Gemini API Key
+
+Firebase App Hosting needs access to your Gemini API key. Set it as a secret by running this command:
+
+```bash
+firebase apphosting:secrets:set GEMINI_API_KEY
+```
+
+When prompted, paste your Gemini API key. You can get a key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+
+### 5. Deploy to Firebase
+
+Finally, deploy your application by running:
+
+```bash
+firebase apphosting:backends:deploy
+```
+
+After the deployment is complete, the CLI will output the URL to your live application.
