@@ -110,17 +110,6 @@ const AppHeader = ({
                         <p>Download Report (PDF)</p>
                     </TooltipContent>
                 </Tooltip>
-                
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" disabled>
-                            <Settings />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>Settings (Coming Soon)</p>
-                    </TooltipContent>
-                </Tooltip>
             </div>
         </header>
     );
