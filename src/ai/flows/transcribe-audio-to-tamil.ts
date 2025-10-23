@@ -34,6 +34,7 @@ const transcribeAudioToTamilPrompt = ai.definePrompt({
   input: {schema: TranscribeAudioToTamilInputSchema},
   output: {schema: TranscribeAudioToTamilOutputSchema},
   prompt: `Transcribe the following audio into Tamil text:\n\n{{media url=audioDataUri}}`,
+  model: 'googleai/gemini-2.5-pro',
 });
 
 const transcribeAudioToTamilFlow = ai.defineFlow(
