@@ -96,22 +96,20 @@ export default function Home() {
       setProgress(30);
       
       setStatusText(processingSteps[1]);
-      const [normalizationResult, emotionResult] = await Promise.all([
-          normalizeTamilSlang({ tamilText: originalText }),
-          detectEmotionTone({ text: originalText }),
-      ]);
-      
+      const normalizationResult = await normalizeTamilSlang({ tamilText: originalText });
       const normalizedText = normalizationResult.normalizedTamilText;
       setNormalizedTamil(normalizedText);
-      setEmotion(emotionResult.emotion.toLowerCase());
 
       const translationResult = await translateNormalizedTamil({
           normalizedTamilText: normalizedText,
           targetLanguage,
       });
-
       const translated = translationResult.translatedText;
       setTranslatedText(translated);
+
+      const emotionResult = await detectEmotionTone({ text: originalText });
+      setEmotion(emotionResult.emotion.toLowerCase());
+      
       setProgress(60);
       
       setStatusText(processingSteps[2]);
