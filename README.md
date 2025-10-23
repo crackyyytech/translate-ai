@@ -69,6 +69,7 @@ When prompted:
 
 Firebase App Hosting needs access to your Gemini API key. Set it as a secret by running this command:
 
+
 ```bash
 firebase apphosting:secrets:set GEMINI_API_KEY
 ```

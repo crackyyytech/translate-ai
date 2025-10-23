@@ -91,24 +91,27 @@ export default function Home() {
       setStatusText(processingSteps[0]);
       setProgress(15);
       const transcriptionResult = await transcribeAudioToTamil({ audioDataUri: dataUri });
-      setOriginalTranscription(transcriptionResult.transcription);
+      const originalText = transcriptionResult.transcription;
+      setOriginalTranscription(originalText);
       setProgress(30);
       
       setStatusText(processingSteps[1]);
-      const [normalizationResult, emotionResult, translationResult] = await Promise.all([
-          normalizeTamilSlang({ tamilText: transcriptionResult.transcription }),
-          detectEmotionTone({ text: transcriptionResult.transcription }),
-          translateNormalizedTamil({
-              normalizedTamilText: transcriptionResult.transcription,
-              targetLanguage,
-          }),
+      const [normalizationResult, emotionResult] = await Promise.all([
+          normalizeTamilSlang({ tamilText: originalText }),
+          detectEmotionTone({ text: originalText }),
       ]);
-
+      
       const normalizedText = normalizationResult.normalizedTamilText;
-      const translated = translationResult.translatedText;
       setNormalizedTamil(normalizedText);
-      setTranslatedText(translated);
       setEmotion(emotionResult.emotion.toLowerCase());
+
+      const translationResult = await translateNormalizedTamil({
+          normalizedTamilText: normalizedText,
+          targetLanguage,
+      });
+
+      const translated = translationResult.translatedText;
+      setTranslatedText(translated);
       setProgress(60);
       
       setStatusText(processingSteps[2]);

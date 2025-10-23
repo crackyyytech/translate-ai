@@ -1,0 +1,40 @@
+type User @table {
+  displayName: String!
+  createdAt: Timestamp!
+  email: String
+  photoUrl: String
+}
+
+type AudioInput @table {
+  user: User!
+  url: String!
+  type: String!
+  createdAt: Timestamp!
+  duration: Int
+  originalFileName: String
+}
+
+type Transcription @table {
+  audioInput: AudioInput!
+  rawText: String!
+  normalizedTamilText: String!
+  createdAt: Timestamp!
+  language: String
+}
+
+type Translation @table {
+  transcription: Transcription!
+  translatedText: String!
+  targetLanguage: String!
+  createdAt: Timestamp!
+}
+
+type TranslationSession @table {
+  user: User!
+  audioInput: AudioInput!
+  transcription: Transcription!
+  translation: Translation!
+  createdAt: Timestamp!
+  updatedAt: Timestamp!
+  sessionName: String
+}
