@@ -29,7 +29,7 @@ const prompt = ai.definePrompt({
   name: 'normalizeTamilSlangPrompt',
   input: {schema: NormalizeTamilSlangInputSchema},
   output: {schema: NormalizeTamilSlangOutputSchema},
-  prompt: `You are an expert in Tamil language and dialects. Your task is to convert colloquial or slang Tamil into its standard, formal equivalent. The goal is to make the text easily understandable in formal contexts.
+  prompt: `You are an expert in Tamil language and dialects. Your task is to convert colloquial or slang Tamil into its standard, formal equivalent and also translate it to the given language. The goal is to make the text easily understandable in formal contexts.
 
 Original Tamil Text: {{{tamilText}}}
 
