@@ -32,10 +32,8 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 
 const processingSteps = [
   'Transcribing audio to Tamil...',
-  'Normalizing Tamil slang...',
-  'Translating to target language...',
-  'Detecting emotional tone...',
-  'Summarizing content...',
+  'Normalizing & Translating...',
+  'Analyzing & Summarizing...',
   'Finalizing results...',
 ];
 
@@ -89,37 +87,37 @@ export default function Home() {
 
     try {
       setStatusText(processingSteps[0]);
-      setProgress(10);
+      setProgress(15);
       const transcriptionResult = await transcribeAudioToTamil({ audioDataUri: dataUri });
       setOriginalTranscription(transcriptionResult.transcription);
-      setProgress(25);
+      setProgress(30);
       
       setStatusText(processingSteps[1]);
       const normalizationResult = await normalizeTamilSlang({ tamilText: transcriptionResult.transcription });
-      setNormalizedTamil(normalizationResult.normalizedTamilText);
-      setProgress(45);
+      const normalizedText = normalizationResult.normalizedTamilText;
+      setNormalizedTamil(normalizedText);
+
+      const translationResult = await translateNormalizedTamil({ normalizedTamilText: normalizedText, targetLanguage });
+      const translated = translationResult.translatedText;
+      setTranslatedText(translated);
+      setProgress(60);
       
       setStatusText(processingSteps[2]);
-      const translationResult = await translateNormalizedTamil({ normalizedTamilText: normalizationResult.normalizedTamilText, targetLanguage });
-      setTranslatedText(translationResult.translatedText);
-      setProgress(65);
-      
-      setStatusText(processingSteps[3]);
-      const emotionResult = await detectEmotionTone({ text: translationResult.translatedText });
-      setEmotion(emotionResult.emotion.toLowerCase());
-      setProgress(80);
+      const [emotionResult, summaryResult] = await Promise.all([
+        detectEmotionTone({ text: translated }),
+        summarizeTranslatedText({
+            tamilText: normalizedText,
+            translatedText: translated,
+            language: targetLanguage,
+        })
+      ]);
 
-      setStatusText(processingSteps[4]);
-      const summaryResult = await summarizeTranslatedText({
-        tamilText: normalizationResult.normalizedTamilText,
-        translatedText: translationResult.translatedText,
-        language: targetLanguage,
-      });
+      setEmotion(emotionResult.emotion.toLowerCase());
       setTamilSummary(summaryResult.tamilSummary);
       setTranslatedSummary(summaryResult.translatedSummary);
-      setProgress(99);
+      setProgress(90);
 
-      setStatusText(processingSteps[5]);
+      setStatusText(processingSteps[3]);
       setProgress(100);
 
     } catch (error) {
@@ -151,6 +149,14 @@ export default function Home() {
   };
 
   const handleFileUpload = (file: File) => {
+    if (file.size > 25 * 1024 * 1024) { // 25MB limit
+        toast({
+            variant: 'destructive',
+            title: 'File Too Large',
+            description: 'Please upload an audio file smaller than 25MB.',
+        });
+        return;
+    }
     const reader = new FileReader();
     reader.onload = (e) => {
       const dataUri = e.target?.result as string;
@@ -163,7 +169,6 @@ export default function Home() {
   
   const handleDownload = () => {
     const printContents = reportRef.current?.innerHTML;
-    const originalContents = document.body.innerHTML;
 
     if (printContents) {
         const printWindow = window.open('', '_blank');
@@ -223,23 +228,23 @@ export default function Home() {
           targetLanguage={targetLanguage}
         />
         <main className="flex-grow p-4 flex flex-col gap-4 overflow-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 flex-grow">
-            <AnalysisPane title="Original Input" className="lg:col-span-1">
-              {isRecording && <VoiceVisualizer analyser={analyserNode} />}
-              {!originalTranscription && !isRecording && (
-                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
-                  <BrainCircuit size={48} className="mb-4" />
-                  <p>Click the <Mic className="inline-block h-4 w-4" /> button to start recording or <Upload className="inline-block h-4 w-4" /> to upload an audio file.</p>
-                  <p className="mt-2 text-sm">Your transcribed Tamil will appear here.</p>
-                </div>
-              )}
-              {originalTranscription && <p className="font-tamil">{originalTranscription}</p>}
-            </AnalysisPane>
-            
-            <div className="flex flex-col gap-4 lg:col-span-2">
-              <AnalysisPane title="Normalized Tamil" fontClassName="font-tamil">
-                {normalizedTamil || <p className="text-muted-foreground">Standard Tamil text will appear here after normalization.</p>}
-              </AnalysisPane>
+          <div className="flex flex-col gap-4 flex-grow">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <AnalysisPane title="Original Input" className="lg:col-span-1">
+                      {isRecording && <VoiceVisualizer analyser={analyserNode} />}
+                      {!originalTranscription && !isRecording && (
+                      <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
+                          <BrainCircuit size={48} className="mb-4" />
+                          <p>Click the <Mic className="inline-block h-4 w-4" /> button to start recording or <Upload className="inline-block h-4 w-4" /> to upload an audio file.</p>
+                          <p className="mt-2 text-sm">Your transcribed Tamil will appear here.</p>
+                      </div>
+                      )}
+                      {originalTranscription && <p className="font-tamil">{originalTranscription}</p>}
+                  </AnalysisPane>
+                  <AnalysisPane title="Normalized Tamil" fontClassName="font-tamil">
+                      {normalizedTamil || <p className="text-muted-foreground">Standard Tamil text will appear here after normalization.</p>}
+                  </AnalysisPane>
+              </div>
               
               <AnalysisPane 
                 title={`Translation (${targetLanguage})`}
@@ -271,7 +276,6 @@ export default function Home() {
                     </Accordion>
                 )}
               </AnalysisPane>
-            </div>
           </div>
         </main>
 
