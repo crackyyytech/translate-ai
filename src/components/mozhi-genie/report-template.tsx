@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface ReportData {
   originalTranscription: string;
@@ -11,11 +11,17 @@ interface ReportData {
 }
 
 export const ReportTemplate = React.forwardRef<HTMLDivElement, { data: ReportData }>(({ data }, ref) => {
+    const [currentDate, setCurrentDate] = useState('');
+
+    useEffect(() => {
+        setCurrentDate(new Date().toLocaleString());
+    }, []);
+
     return (
         <div ref={ref}>
             <div className="text-center mb-8">
                 <h1 className="text-4xl font-bold">MozhiGenie Analysis Report</h1>
-                <p className="text-sm text-gray-500">{new Date().toLocaleString()}</p>
+                <p className="text-sm text-gray-500">{currentDate}</p>
             </div>
 
             <div className="space-y-6 text-base">
